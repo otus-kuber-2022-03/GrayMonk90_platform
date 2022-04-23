@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: canary
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: canary-ing-01
+  namespace: canary
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: "nginx"
+  rules:
+  - http:
+      paths:
+      - path: /canary
+        pathType: Prefix
+        backend:
+          service:
+            name: canary-svc-01
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-svc-01
+  namespace: canary
+spec:
+  selector:
+    application: echo-01
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-deploy-01
+  namespace: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application: echo-01
+  template:
+    metadata:
+      name: echo-deploy-01
+      labels: 
+        application: echo-01
+    spec:
+      containers:
+      - name: echo-deploy-01
+        image: ealen/echo-server
+        env:
+          - name: PORT
+            value: "80"
+          - name: COMMANDS__HTTPBODY__HEADER
+            value: "Response from v1"
+          - name: ENABLE__HOST
+            value: "false"
+          - name: ENABLE__HTTP
+            value: "false"
+          - name: ENABLE__REQUEST
+            value: "false"
+          - name: ENABLE__FILE
+            value: "false"
+          - name: ENABLE__HEADER
+            value: "false"
