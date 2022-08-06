@@ -9,3 +9,21 @@ GrayMonk90 Platform repository
 Написал Dockerfile с web-server'ом, за основу взял `nginx:1.21.6-alpine`, запушил образ в docker hub и развернул под с этим образом, используя [манифест](kubernetes-intro/web-pod.yaml). После подключения init-контейнера, смог увидеть сгенерированный index.html (лого красивое :thumbsup:).  
 
 Собрал фронт microservices-demo, развернул с помощью `kubectl run ...`, сохранил манифест (`-o yaml > frontend-pod.yaml`). Исправил ошибку при запуске пода, исправления внес в [манифест](kubernetes-intro/frontend-pod-healthy.yaml).
+
+## Занятие 8
+```
+manakhov@k8s-otus:~/hw/08/kubernetes-operators$ kubectl get jobs
+NAME                         COMPLETIONS   DURATION   AGE
+backup-mysql-instance-job    1/1           5s         3m21s
+restore-mysql-instance-job   1/1           42s        2m2s
+graymonk@k8s-otus:~/hw/08/kubernetes-operators$ export MYSQLPOD=$(kubectl get pods -l app=mysql-instance -o jsonpath="{.items[*].metadata.name}")
+graymonk@k8s-otus:~/hw/08/kubernetes-operators$ kubectl exec -it $MYSQLPOD -- mysql -potuspassword -e "select * from test;" otus-database
+mysql: [Warning] Using a password on the command line interface can be insecure.
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | some data   |
+|  2 | some data-2 |
++----+-------------+
+graymonk@k8s-otus:~/hw/08/kubernetes-operators$ 
+```
